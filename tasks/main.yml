@@ -40,31 +40,25 @@
 - name: Fail if OS is not RHEL 7 or higher
   assert: { that: "ansible_distribution_version >= 7" }
 
-- name: Check for Katello already installed
-  command: "which katello"
-  register: katello_installed
-  changed_when: False
-  failed_when: False
+- name: Check for Satellite installed
+  stat:
+    path: "/usr/sbin/satellite-installer"
+  register: satellite_in_path
+  failed_when: false
+  changed_when: false
 
-- name: Check for puppet in $PATH
-  command: "which puppet"
-  register: puppet_in_path
-  changed_when: False
-  failed_when: False
+- name: Ensure Puppet and Java not installed
+  block:
+    - name: Ensure Puppet is not installed
+      yum:
+        name: puppet
+        state: absent
 
-#- name: Puppet is installed
-#  fail: msg="Katello cannot be installed when puppet is already installed"
-#  when: "puppet_in_path.rc == 0 and katello_installed.rc == 1 "
-
-- name: Check for Java in $PATH
-  command: "which java"
-  register: java_in_path
-  changed_when: False
-  failed_when: False
-
-#- name: Java is installed
-#  fail: msg="Katello cannot be installed when Java is already installed"
-#  when: "java_in_path.rc == 0 and katello_installed.rc == 1 "
+    - name: Ensure Java is not installed
+      yum:
+        name: java
+        state: absent
+  when: satellite_in_path.stat.exists == false
 
 - name: Ensure EPEL is not installed
   yum:
@@ -116,11 +110,11 @@
   changed_when: False
   register: repositories_state
 
-## TODO: FIXME these two tasks together shouldn't change the end-state, but neither is idempotent
 - name: Reset enabled yum/rhn distros
   command: subscription-manager repos --disable "*"
   when: 'repositories_state.stdout.find("Enabled:   0") == 0'
 
+## TODO: FIXME this task shouldn't change the end-state, but is not idempotent
 ## Note: Satellite channel is rhel-<rhel version>-server-satellite-<satellite version>-rpms
 - name: Only enable required yum/rhn distros
   command: "subscription-manager repos \
@@ -128,19 +122,20 @@
     --enable rhel-server-rhscl-{{ ansible_distribution_major_version }}-rpms \
     --enable rhel-{{ ansible_distribution_major_version }}-server-satellite-6.2-rpms"
 
-## Installs and activates time sync. This is required for Foreman to function
-- name: Install and activate time sync
-  include_tasks: timesync.yml
-  when: ansible_distribution_major_version == 7
+- block:
+    ## Installs and activates time sync. This is required for Foreman to function
+    - name: Install and activate time sync
+      include_tasks: timesync.yml
 
-## Installs and configures firewall- comment out to leave firewall out
-- name: Install and configure firewall
-  include_tasks: firewall.yml
-  when: ansible_distribution_major_version == 7
+    ## Installs and configures firewall- comment out to leave firewall out
+    - name: Install and configure firewall
+      include_tasks: firewall.yml
+  when: ansible_distribution_major_version == "7"
 
 ## comment this line out to skip recommended but not required packages
 - name: Install required packages
   include_tasks: recommended-packages.yml
+  tags: recommended
 
 - name: Install Satellite
   yum:
@@ -148,17 +143,26 @@
     state: installed
 
 - name: Copy answer file into place
-  copy:
+  template:
     src: answers.yaml
     dest: /etc/foreman-installer/scenarios.d/role-ansible-satellite6-answers.yaml
   register: copied_answer_file
 
 - name: Enable answer file
   lineinfile:
-    dest: /etc/foreman-installer/scenarios.d/satellite.yaml
-    line: ':answer_file: /etc/foreman-installer/scenarios.d/role-ansible-satellite6-answers.yaml'
+    path: /etc/foreman-installer/scenarios.d/satellite.yaml
+    regexp: '(.*):answer_file:(.*)'
+    line: '  :answer_file: /etc/foreman-installer/scenarios.d/role-ansible-satellite6-answers.yaml'
 
 - name: Run Satellite installer
   command: satellite-installer --scenario satellite
   when: copied_answer_file.changed == true
+
+- name: Copy manifest to Satellite server
+  copy:
+    src: manifest.zip
+    dest: /tmp/manifest.zip
+
+- name: Upload manifest
+  command: hammer -u admin -p {{ satellite_admin_password }} subscription upload --organization "{{ satellite_initial_organization | default('Default Organization') }}" --file /tmp/manifest.zip
 ...

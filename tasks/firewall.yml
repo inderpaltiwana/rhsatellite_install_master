@@ -51,4 +51,18 @@
     permanent: true
     state: enabled
   notify: restart firewalld
+
+- name: Enable port 80 via firewalld
+  firewalld:
+    port: 80/tcp
+    permanent: true
+    state: enabled
+  notify: restart firewalld
+
+- name: Enable Satellite main web page via firewalld
+  firewalld:
+    port: 443/tcp
+    permanent: true
+    state: enabled
+  notify: restart firewalld
 ...

@@ -15,7 +15,8 @@ _Note: Still work in progress_
 - **Given** valid RedHat subscription is available
 - **When** the deployment is executed
 - **Then** subscriptions are attached
-- **Then** pre-requisite checks are run ()
+- **Then** pre-requisite checks are run
+- **Then** Red Hat Satellite is installed
 - **Then** TBC
 
 
@@ -26,8 +27,11 @@ A list of the external variables used by the role.
 
 | Variable  | Description  | Example  | 
 |---|---|---|
-| **var1**  | Var1 description  |  Var1 example. |
-| **var2**  |   |   |
+| **hostname**  | Host FQDN  |  satellite-x123456.mydomain.com |
+| **satellite_admin_password**  |  Password for Satellite admin user |  |
+| **satellite_initial_organization**  | Organisation name. | Default Organization |
+| **satellite_initial_location**  | Initial location | Default Location |
+| **var3**  |   |   |
 | **var3**  |   |   |
 
 
@@ -36,11 +40,13 @@ A list of the external variables used by the role.
 How to invoke the role from a playbook:
 
 ```yaml
-- name: Creates Tenant
+- name: Installs Red Hat Satellite
   include_role:
-    name: OpenShift_Create_Tenant
+    name: rhsatellite_install_master
   vars:
-    var1: '???'
-    var2: '???'
+    hostname: 'satellite-x123456.mydomain.com'
+    satellite_admin_password: 'f6E38KluywWK0ns'
+    satellite_initial_organization: 'Widget and Gadget Co.'
+    satellite_initial_location: 'United Kingdom'
     var3: '???'
 ```
