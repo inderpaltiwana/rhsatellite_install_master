@@ -154,15 +154,15 @@
     regexp: '(.*):answer_file:(.*)'
     line: '  :answer_file: /etc/foreman-installer/scenarios.d/role-ansible-satellite6-answers.yaml'
 
+- name: Run Satellite installer
+  command: satellite-installer --scenario satellite
+  when: copied_answer_file.changed == true
+
 - name: Capture Satellite admin password
   become: yes
   shell: cat /etc/foreman-installer/scenarios.d/role-ansible-satellite6-answers.yaml | grep " admin_password" | awk '{print $2}'
   changed_when: False
   register: result
-
-- name: Run Satellite installer
-  command: satellite-installer --scenario satellite
-  when: copied_answer_file.changed == true
 
 - name: Copy manifest to Satellite server
   copy:
