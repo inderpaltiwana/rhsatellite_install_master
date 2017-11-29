@@ -31,7 +31,8 @@ A list of the external variables used by the role.
 | **satellite_admin_password**  |  Password for Satellite admin user |  |
 | **satellite_initial_organization**  | Organisation name. | Default Organization |
 | **satellite_initial_location**  | Initial location | Default Location |
-| **var3**  |   |   |
+| **satellite_proxy_url**  | Proxy server url (optional) | http://192.168.10.10  |
+| **satellite_proxy_port**  | Proxy server port number (optional) | 3128  |
 | **var3**  |   |   |
 
 

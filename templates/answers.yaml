@@ -15,6 +15,12 @@
     package_names: 
       - katello
       - tfm-rubygem-katello
+{% if satellite_proxy_host_name is defined %}
+    proxy_url: "{{ satellite_proxy_url }}"
+{% if satellite_proxy_host_port is defined %}
+    proxy_port: "{{ satellite_proxy_port }}"
+{% endif %}
+{% endif %}
   foreman:
 {% if satellite_admin_password is defined %}
     admin_password: {{ satellite_admin_password }}
