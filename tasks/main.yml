@@ -1,10 +1,10 @@
 ---
 - name: Set hostname
   hostname:
-    name: "{{ hostname }}"
+    name: "{{ satins_hostname }}"
   register: set_hostname
   tags: set_hostname
-  when: hostname is defined
+  when: satins_hostname is defined
 
 - name: Rebuild the initramfs image so hostname is reflected correctly
   command: dracut -f
@@ -75,11 +75,11 @@
   changed_when: False
 
 - name: Confirm DNS resoultion for short domain name of this host
-  shell: "ping -c1 $(hostname -s)"
+  shell: "ping -c1 $(satins_hostname -s)"
   changed_when: False
 
 - name: Confirm DNS resolution for fully-qualified domain name of this host
-  shell: "ping -c1 $(hostname -f)"
+  shell: "ping -c1 $(satins_hostname -f)"
   changed_when: False
 
 ## NOTE: this only works if your version of ansible includes https://github.com/ansible/ansible-modules-core/pull/1204
@@ -88,21 +88,21 @@
 - name: Enable RHEL subscription via username/password
   redhat_subscription:
     state: present
-    username: "{{ rhn_user }}"
-    password: "{{ rhn_pass }}"
+    username: "{{ redhat_user }}"
+    password: "{{ redhat_pass }}"
     pool: ".*Red Hat (Enterprise Linux|Satellite).*"
-  when: rhn_user is defined and rhn_pass is defined
+  when: redhat_user is defined and redhat_pass is defined
 
 - name: Enable RHEL subscription via activation key
   redhat_subscription:
     state: present
-    activationkey: "{{ rhn_activationkey }}"
+    activationkey: "{{ redhat_activationkey }}"
     pool: ".*Red Hat (Enterprise Linux|Satellite).*"
-  when: rhn_activation_key is defined
+  when: redhat_activationkey is defined
 
 - name: Add subs by pool id if your version of Ansible has a buggy redhat_subscription module
   command: "subscription-manager subscribe --pool={{ item }}"
-  with_items: "{{ rhn_pool_ids | default([]) }}"
+  with_items: "{{ redhat_pool_ids | default([]) }}"
 
 - name: Check enabled repositories
   command: "subscription-manager repos --list"

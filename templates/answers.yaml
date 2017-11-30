@@ -15,20 +15,20 @@
     package_names: 
       - katello
       - tfm-rubygem-katello
-{% if satellite_proxy_host_name is defined %}
-    proxy_url: "{{ satellite_proxy_url }}"
-{% if satellite_proxy_host_port is defined %}
-    proxy_port: "{{ satellite_proxy_port }}"
+{% if amos_proxy_host_name is defined %}
+    proxy_url: "{{ amos_proxy_host_name }}"
+{% if amos_proxy_port is defined %}
+    proxy_port: "{{ amos_proxy_port }}"
 {% endif %}
 {% endif %}
   foreman:
-{% if satellite_admin_password is defined %}
-    admin_password: {{ satellite_admin_password }}
+{% if satins_admin_password is defined %}
+    admin_password: {{ satins_admin_password }}
 {% endif %}
     organizations_enabled: true
     locations_enabled: true
-    initial_organization: {{ satellite_initial_organization | default('Default Organization') }}
-    initial_location: {{ satellite_initial_location | default('Default Location') }}
+    initial_organization: {{ satins_initial_organization | default('Default Organization') }}
+    initial_location: {{ satins_initial_location | default('Default Location') }}
     custom_repo: true
     configure_epel_repo: false
     configure_scl_repo: false
