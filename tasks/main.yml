@@ -75,11 +75,11 @@
   changed_when: False
 
 - name: Confirm DNS resoultion for short domain name of this host
-  shell: "ping -c1 $(satins_hostname -s)"
+  shell: "ping -c1 $(hostname -s)"
   changed_when: False
 
 - name: Confirm DNS resolution for fully-qualified domain name of this host
-  shell: "ping -c1 $(satins_hostname -f)"
+  shell: "ping -c1 $(hostname -f)"
   changed_when: False
 
 ## NOTE: this only works if your version of ansible includes https://github.com/ansible/ansible-modules-core/pull/1204
